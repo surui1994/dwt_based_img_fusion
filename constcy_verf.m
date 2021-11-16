@@ -1,5 +1,6 @@
 function mat_out = constcy_verf(mat_in)
     %%% perform consistency verification to input matrix
+    % for selection method in image fusion 
 
     [r,c] = size(mat_in); 
     mat_out = zeros(r,c);
