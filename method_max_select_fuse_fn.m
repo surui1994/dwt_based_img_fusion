@@ -1,7 +1,6 @@
 function fuse_im=method_max_select_fuse_fn(inp_wt,Nlevels)
     %%% for image fusion, use selection method
-    %%% select the max absolute coef value of decomposition matrix
-
+    %%% ! select the max absolute coef value (or power) of decomposition matrix (Activity level)
     % for implement eq.25 in the paper:
     % A wavelet-based image fusion tutorial
 
