@@ -1,5 +1,5 @@
 function mean_windowed = windowed_centered_mean(mat, m, n, zero_pad)
-    % windowed average centered at position p(i,j)
+    % windowed average centered at position p(i,j) for subbands fusion
     % the function
     % to compute the MEAN matrix inside the eq.31 of the paper:
     % A wavelet-based image fusion tutorial
