@@ -16,7 +16,8 @@ function fuse_im=method_max_select_fuse_fn(inp_wt,Nlevels)
         sband1=cell2mat(inp_wt{1}(k));
         sband2=cell2mat(inp_wt{2}(k));
         
-       % Notice: the activity level will be computed as: abs(sub_band):  
+       % Notice: the activity level will be computed as: abs(sub_band):
+       % the activity level measurement can also be computed as: abs(sub_band).^2
         sig_temp1 = (abs(sband1) - abs(sband2))>=0;
         sig_temp2 = ~sig_temp1;
 
