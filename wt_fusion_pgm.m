@@ -33,13 +33,18 @@ disp(label);
 % for i=1:10
     i=6
 %%% Fusion Method Parameters.
-Nlevels=3;
+Nlevels=2;
 NoOfBands=3*Nlevels+1;
-wname='db1'; %% DCHWT coif5 db16 db8 sym8 bior6.8
+wname='sym4'; %% DCHWT coif5 db16 db8 sym8 bior6.8
 
-image_left = ['./MF_images/image',num2str(i),'_left.png'];
-image_right = ['./MF_images/image',num2str(i),'_right.png'];
-fused_path = ['./fused_mf/fused',num2str(i),'_dchwt.png'];
+% image_left = ['./MF_images/image',num2str(i),'_left.png'];
+% image_right = ['./MF_images/image',num2str(i),'_right.png'];
+% fused_path = ['./fused_mf/fused',num2str(i),'_dchwt.png'];
+fused_path = 'G:\医学影像\Image_Fusion\ppr_code\1_dwt_fsn\results\';
+image_left = "G:\医学影像\Image_Fusion\med_a.jpg";
+image_right = "G:\医学影像\Image_Fusion\med_b.jpg";
+
+
 
 % image_left = ['./mf_noise_images/image',num2str(i),label,'_left.png'];
 % image_right = ['./mf_noise_images/image',num2str(i),label,'_right.png'];
@@ -90,7 +95,8 @@ x{2}=imread(image_right);
    %%% General Wavelet Decomposition.
    for m=1:2
         xin=double(x{m});
-        dwtmode('per');
+%         xin=im2double(x{m});
+        % dwtmode('per');
         [C,S]=wavedec2(xin,Nlevels,wname);
         k=NoOfBands;
         %% get the approximation matrix (low frequency image) of the highest level:
@@ -99,22 +105,22 @@ x{2}=imread(image_right);
         
         k=k-1;
         st_pt=S(1,1)*S(1,2);
-        %   for i=2:size(S,1)-1
-        %       slen=S(i,1)*S(i,2);
-        %       CW{k}=reshape(C(st_pt+slen+1:st_pt+2*slen),S(i,1),S(i,2));     %% Vertical
-        %       CW{k-1}=reshape(C(st_pt+1:st_pt+slen),S(i,1),S(i,2));          %% Horizontal
-        %       CW{k-2}=reshape(C(st_pt+2*slen+1:st_pt+3*slen),S(i,1),S(i,2)); %% Diagonal
-        %       st_pt=st_pt+3*slen;
-        %       k=k-3;
-        %   end
-        for i=1:Nlevels
-            %% get the detail matrix (high frequency images) for each decomposition level:
-            [H, V, D] = detcoef2('all', C, S, i); %% horizontal, vertical, diagonal
-            CW{k}=V; %% Vertical
-            CW{k-1}=H; %% Horizontal
-            CW{k-2}=D; %% Diagonal
-            k=k-3;
-        end
+          for i=2:size(S,1)-1
+              slen=S(i,1)*S(i,2);
+              CW{k}=reshape(C(st_pt+slen+1:st_pt+2*slen),S(i,1),S(i,2));     %% Vertical
+              CW{k-1}=reshape(C(st_pt+1:st_pt+slen),S(i,1),S(i,2));          %% Horizontal
+              CW{k-2}=reshape(C(st_pt+2*slen+1:st_pt+3*slen),S(i,1),S(i,2)); %% Diagonal
+              st_pt=st_pt+3*slen;
+              k=k-3;
+          end
+%         for i=1:Nlevels
+%             %% get the detail matrix (high frequency images) for each decomposition level:
+%             [H, V, D] = detcoef2('all', C, S, i); %% horizontal, vertical, diagonal
+%             CW{k}=V; %% Vertical
+%             CW{k-1}=H; %% Horizontal
+%             CW{k-2}=D; %% Diagonal
+%             k=k-3;
+%         end
 
         inp_wt{m}=CW;
    end
@@ -127,8 +133,8 @@ clear CW
 % ! Different methods for coefficients fusion:
 
 %%% Fusion Method (SIViP 2011)
-detail_exponent=1; %%% Fusion Method2 (SIViP 2011), db8-> detail_exponent=1;
-fuse_im=method2_sivip2011_fn(inp_wt,Nlevels,detail_exponent);
+% detail_exponent=1; %%% Fusion Method2 (SIViP 2011), db8-> detail_exponent=1;
+% fuse_im=method2_sivip2011_fn(inp_wt,Nlevels,detail_exponent);
 
 % Using general weighted average method for subbands fusion:
 % fuse_im=method_weighted_avg_fuse_fn(inp_wt,Nlevels);
@@ -137,6 +143,8 @@ fuse_im=method2_sivip2011_fn(inp_wt,Nlevels,detail_exponent);
 % and simple average for low frequency bands
 % fuse_im=method_max_select_fuse_fn(inp_wt,Nlevels);
 
+% ! test case, simple average method for image fusion:
+fuse_im = method_simple_avg_fuse_fn( inp_wt,Nlevels );
 
 %%
 %%% Wavelet Reconstruction.
@@ -153,7 +161,8 @@ yw=fuse_im; clear fuse_im
        xrtemp=[xrtemp reshape(yw{k-1},1,S(i,1)*S(i,2)) reshape(yw{k},1,S(i,1)*S(i,2)) reshape(yw{k-2},1,S(i,1)*S(i,2))];
        k=k-3;
    end
-   xrcw=uint8(waverec2(xrtemp,S,wname));
+%    xrcw=uint8(waverec2(xrtemp,S,wname));
+   xrcw=waverec2(xrtemp,S,wname);
 % end
 
 % toc
@@ -175,9 +184,12 @@ yw=fuse_im; clear fuse_im
 % fusion_perform_fn(xrcw,x);
 
 temp = imresize(xrcw,[M N]);
+% temp = im2double(temp);
+figure,imshow(uint8(temp)),title('DWT Fused Image');
 
-% figure,imshow(temp);
-imwrite(temp,fused_path,'png');
+% save image and matrix:
+imwrite(uint8(temp),strcat(fused_path,'simple_avg_fused_1.png'),'png');
+save(strcat(fused_path,'simple_avg_fused_1.mat'), 'temp');
 
 % end
 % end
